@@ -1,0 +1,10 @@
+dist/
+build/
+coverage
+node_modules/
+.DS_Store
+lib
+.idea
+.vscode/
+.husky/
+yarn-error.log
