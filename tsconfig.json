@@ -13,10 +13,6 @@
     "skipLibCheck": true
   },
   "include": [
-    "./Wechat/*"
-  ],
-  "exclude": [
-    "./node_modules/*",
-    "./dist"
+    "Wechat/*"
   ]
 }
