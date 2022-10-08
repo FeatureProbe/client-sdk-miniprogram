@@ -1,0 +1,16 @@
+<!--index.wxml-->
+<view class="container">
+  <view class="h2">FeatureProbe miniprogram SDK demo</view>
+  <view>
+    This is a simple WeChat Mini Program Application using FeatureProbe Mini Program SDK.  
+  </view>
+
+  <view class="h3">boolean type</view>
+  <view>
+    FeatureProbe evaluation boolean type toggle result is : {{boolValue}}
+  </view>
+  <view>
+    FeatureProbe evaluation boolean type toggle detail is : 
+    <view>{{boolDetail}}</view>
+  </view>
+</view>
