@@ -1,4 +1,4 @@
-import { featureProbeClient, FPUser} from "./utils/feature-probe/index";
+import { featureProbeClient, FPUser} from "featureprobe-client-sdk-miniprogram";
 // app.js
 App({
   onLaunch() {

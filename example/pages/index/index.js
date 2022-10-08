@@ -1,4 +1,4 @@
-import { featureProbeClient } from "../../utils/feature-probe/index";
+import { featureProbeClient } from "featureprobe-client-sdk-miniprogram";
 // index.js
 
 Page({
