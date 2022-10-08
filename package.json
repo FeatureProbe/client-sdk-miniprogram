@@ -5,7 +5,9 @@
   "types": "./dist/index.d.ts",
   "description": "FeatureProbe Client Side SDK for MiniProgram",
   "scripts": {
-    "build": "rollup -c rollup.config.js",
+    "build": "npm run build:ts && npm run build:web",
+    "build:ts": "tsc",
+    "build:web": "rollup -c rollup.config.js",
     "test": "jest --no-cache --runInBand",
     "test:cov": "jest --coverage --no-cache --runInBand"
   },

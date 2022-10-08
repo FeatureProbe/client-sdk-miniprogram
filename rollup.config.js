@@ -9,7 +9,6 @@ import pkg from './package.json';
 
 export default {
   input: "./WeChat/index.ts",
-  
   output: {
     file: "./dist/index.js",
     format: 'esm',
