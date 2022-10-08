@@ -5,6 +5,7 @@
     "declaration": true,
     "sourceMap": true,
     "outDir": "./dist",
+    "rootDir": "./",
     "strict": true,
     "moduleResolution": "node",
     "resolveJsonModule": true,
