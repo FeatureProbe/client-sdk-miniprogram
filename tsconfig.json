@@ -12,6 +12,10 @@
     "forceConsistentCasingInFileNames": true,
     "skipLibCheck": true
   },
-  "include": ["Wechat/*"],
-  "exclude": ["node_modules/*"]
+  "include": [
+    "./Wechat/*"
+  ],
+  "exclude": [
+    "./node_modules/*"
+  ]
 }
