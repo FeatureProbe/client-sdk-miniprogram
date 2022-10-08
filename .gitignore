@@ -8,3 +8,4 @@ lib
 .vscode/
 .husky/
 yarn-error.log
+package-lock.json

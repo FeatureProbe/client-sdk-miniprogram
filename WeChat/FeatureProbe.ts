@@ -1,8 +1,7 @@
 import { TinyEmitter } from "tiny-emitter";
 import { Base64 } from "js-base64";
+import wefetch from "wefetch";
 import { FPUser } from "./FPUser";
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const wf = require('wefetch');
 import { FPToggleDetail, IParams, IOption  } from "./types";
 
 const PKG_VERSION = 'SDK_VERSION';
@@ -11,7 +10,7 @@ const UA = "WECHAT_MINIPROGRAM/" + PKG_VERSION;
 const EVENTS = {
   READY: "ready",
   ERROR: "error",
-  TOGGLES: "toggles",
+  UPDATE: "update",
 };
 
 class FeatureProbe extends TinyEmitter {
@@ -120,6 +119,10 @@ class FeatureProbe extends TinyEmitter {
     return Object.assign({}, this.user);
   }
 
+  public identifyUser(user: FPUser) {
+    this.user = Object.assign({}, user);
+  }
+
   static newForTest(toggles: { [key: string]: any }): FeatureProbe {
     const fp = new FeatureProbe();
     fp.init({
@@ -195,7 +198,7 @@ class FeatureProbe extends TinyEmitter {
     const userParam = Base64.encode(userStr);
     const url = this.togglesUrl;
 
-    wf.get(url, {
+    await wefetch.get(url, {
       cache: "no-cache",
       header: {
         Authorization: this.clientSdkKey,
@@ -205,15 +208,12 @@ class FeatureProbe extends TinyEmitter {
       data: {
         user: userParam
       }
-    })
-      .then((response: any) => {
-        console.log('-----', response);
-        this.toggles = response.data;
-        this.emit(EVENTS.TOGGLES);
-      })
-      .catch((e: any) => {
-        this.emit(EVENTS.ERROR, e);
-      });
+    }).then((response: any) => {
+      this.toggles = response.data;
+      this.emit(EVENTS.UPDATE);
+    }).catch((e: any) => {
+      this.emit(EVENTS.ERROR, e);
+    });
   }
 
   private async sendEvents(key: string): Promise<void> {
@@ -238,7 +238,7 @@ class FeatureProbe extends TinyEmitter {
         },
       ];
 
-      wf.post(this.eventsUrl, {
+      await wefetch.post(this.eventsUrl, {
         cache: "no-cache",
         header: {
           Authorization: this.clientSdkKey,
@@ -256,4 +256,4 @@ class FeatureProbe extends TinyEmitter {
 const featureProbeClient = new FeatureProbe();
 
 
-export { FeatureProbe, FPToggleDetail, featureProbeClient };
+export { featureProbeClient };
