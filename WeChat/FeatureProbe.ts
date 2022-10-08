@@ -256,4 +256,4 @@ class FeatureProbe extends TinyEmitter {
 const featureProbeClient = new FeatureProbe();
 
 
-export { featureProbeClient };
+export { FeatureProbe, featureProbeClient };
