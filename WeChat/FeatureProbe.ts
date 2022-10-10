@@ -21,7 +21,7 @@ class FeatureProbe extends TinyEmitter {
   private user: FPUser;
   private toggles: { [key: string]: FPToggleDetail } | null;
   private timer?: NodeJS.Timeout;
-  private readyPromise: Promise<void>
+  private readyPromise: Promise<void>;
 
 
   constructor() {
@@ -35,9 +35,9 @@ class FeatureProbe extends TinyEmitter {
     this.toggles = {};
     this.readyPromise = new Promise((resolve) => {
       const onReadyCallback = () => {
-        this.off(EVENTS.READY, onReadyCallback)
+        this.off(EVENTS.READY, onReadyCallback);
         resolve();
-      }
+      };
       this.on(EVENTS.READY, onReadyCallback);
     });
   }
