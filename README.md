@@ -18,7 +18,8 @@ Reading the short [Doc](https://github.com/FeatureProbe/feature-probe-docs/blob/
 
 ## How to use this SDK
 
-See [SDK Doc](https://docs.featureprobe.io/how-to/Client-Side%20SDKs/minirprogram-sdk) for detail. [中文](https://docs.featureprobe.io/zh-CN/how-to/Client-Side%20SDKs/minirprogram-sdk/)
+See [SDK Doc](https://docs.featureprobe.io/how-to/Client-Side%20SDKs/minirprogram-sdk) for detail  [中文地址](https://docs.featureprobe.io/zh-CN/how-to/Client-Side%20SDKs/minirprogram-sdk/). For more information about SDK API, please reference [SDK API](https://featureprobe.github.io/client-sdk-miniprogram/).
+
 
 ## Contributing
 
