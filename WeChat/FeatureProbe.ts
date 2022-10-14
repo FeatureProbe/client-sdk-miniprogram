@@ -7,6 +7,11 @@ import { FPToggleDetail, IParams, IOption  } from "./types";
 const PKG_VERSION = 'SDK_VERSION';
 const UA = "WECHAT_MINIPROGRAM/" + PKG_VERSION;
 
+const STATUS = {
+  PENDING: "pending",
+  READY: "ready",
+}
+
 const EVENTS = {
   READY: "ready",
   ERROR: "error",
@@ -22,7 +27,7 @@ class FeatureProbe extends TinyEmitter {
   private toggles: { [key: string]: FPToggleDetail } | null;
   private timer?: NodeJS.Timeout;
   private readyPromise: Promise<void>;
-
+  private status: string;
 
   constructor() {
     super();
@@ -40,6 +45,7 @@ class FeatureProbe extends TinyEmitter {
       };
       this.on(EVENTS.READY, onReadyCallback);
     });
+    this.status = STATUS.PENDING;
   }
 
   public init({
@@ -79,9 +85,11 @@ class FeatureProbe extends TinyEmitter {
 
   public async start() {
     const interval = this.refreshInterval;
-    await this.fetchToggles();
-    this.emit(EVENTS.READY);
-    this.timer = setInterval(() => this.fetchToggles(), interval);
+    try {
+      await this.fetchToggles();
+    } finally {
+      this.timer = setInterval(() => this.fetchToggles(), interval);
+    }
   }
 
   public stop() {
@@ -129,11 +137,11 @@ class FeatureProbe extends TinyEmitter {
   }
 
   public getUser(): FPUser {
-    return Object.assign({}, this.user);
+    return this.user;
   }
 
   public identifyUser(user: FPUser) {
-    this.user = Object.assign({}, user);
+    this.user = user;
   }
 
   public logout() {
@@ -149,6 +157,7 @@ class FeatureProbe extends TinyEmitter {
       user: new FPUser(),
     });
     fp.toggles = toggles;
+    fp.successInitialized();
     return fp;
   }
 
@@ -216,7 +225,7 @@ class FeatureProbe extends TinyEmitter {
     const userParam = Base64.encode(userStr);
     const url = this.togglesUrl;
 
-    await wefetch.get(url, {
+    return wefetch.get(url, {
       cache: "no-cache",
       header: {
         Authorization: this.clientSdkKey,
@@ -228,9 +237,11 @@ class FeatureProbe extends TinyEmitter {
       }
     }).then((response: any) => {
       this.toggles = response.data;
+      this.successInitialized();
       this.emit(EVENTS.UPDATE);
     }).catch((e: any) => {
-      this.emit(EVENTS.ERROR, e);
+      console.error(e);
+      //this.emit(EVENTS.ERROR, e);
     });
   }
 
@@ -266,6 +277,15 @@ class FeatureProbe extends TinyEmitter {
         data: JSON.stringify(payload),
       }).catch(() => {
         // TODO:
+      });
+    }
+  }
+
+  private successInitialized() {
+    if(this.status === STATUS.PENDING) {
+      this.status = STATUS.READY;
+      setTimeout(() => {
+        this.emit(EVENTS.READY);
       });
     }
   }
