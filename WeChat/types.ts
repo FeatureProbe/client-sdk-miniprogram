@@ -36,4 +36,10 @@ export interface IOption {
   clientSdkKey: string;
   user: FPUser;
   refreshInterval?: number;
+  timeoutInterval?: number;
+}
+
+export interface IStorageProvider {
+  setItem: (key: string, data: any) => Promise<void>;
+  getItem: (key: string) => Promise<any>;
 }

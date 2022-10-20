@@ -2,13 +2,11 @@ import { FeatureProbe } from "../WeChat/FeatureProbe";
 import { FPUser } from "../WeChat/index";
 import * as data from "./fixtures/toggles.json";
 
-const fpClient = FeatureProbe.newForTest(data);
-
 test("FeatureProbe instance", () => {
   expect(new FeatureProbe()).not.toBeNull();
 });
 
-test("feature probe init with invalid url", () => {
+test("FeatureProbe init with invalid url", () => {
   const fp = new FeatureProbe();
   expect(() => {
     fp.init({
@@ -16,9 +14,59 @@ test("feature probe init with invalid url", () => {
       user: new FPUser(),
     })
   }).toThrow(Error);
+
+  expect(() => {
+    fp.init({
+      remoteUrl: "invalid url",
+      clientSdkKey: "",
+      user: new FPUser(),
+    });
+  }).toThrow();
+
+  expect(() => {
+    fp.init({
+      remoteUrl: "http://127.0.0.1:4007",
+      clientSdkKey: "client-sdk-key1",
+      user: new FPUser(),
+      refreshInterval: -1,
+    });
+  }).toThrow();
+
+  expect(() => {
+    fp.init({
+      remoteUrl: "http://127.0.0.1:4007",
+      clientSdkKey: "client-sdk-key1",
+      user: new FPUser(),
+      timeoutInterval: -1,
+    });
+  }).toThrow();
+
+  expect(() => {
+    fp.init({
+      clientSdkKey: "client-sdk-key1",
+      user: new FPUser(),
+    });
+  }).toThrow();
+
+  expect(() => {
+    fp.init({
+      togglesUrl: "http://127.0.0.1:4007",
+      clientSdkKey: "client-sdk-key1",
+      user: new FPUser(),
+    });
+  }).toThrow();
+
+  expect(() => {
+    fp.init({
+      eventsUrl: "http://127.0.0.1:4007",
+      clientSdkKey: "client-sdk-key1",
+      user: new FPUser(),
+    });
+  }).toThrow();
 });
 
 test("FeatureProbe boolean toggle", (done) => {
+  const fpClient = FeatureProbe.newForTest(data);
   expect(fpClient.boolValue("bool_toggle", false)).toBe(true);
   expect(fpClient.boolValue("string_toggle", false)).toBe(false);
   expect(fpClient.boolValue("__not_exist_toggle", false)).toBe(false);
@@ -31,6 +79,22 @@ test("FeatureProbe boolean toggle", (done) => {
   expect(detail.value).toBe(false);
   expect(detail.reason).toBe("Value type mismatch");
   done();
+});
+
+test("FeatureProbe no toggles", (done) => {
+  const fpClient = FeatureProbe.newForTest();
+  
+  fpClient.on("ready", function() {
+    expect(fpClient.boolValue("bool_toggle", false)).toBe(false);
+
+    const detail = fpClient.boolDetail("bool_toggle", false);
+    expect(detail.value).toBe(false);
+    expect(detail.reason).toBe('Not ready');
+
+    done();
+  });
+  
+  fpClient.start();
 });
 
 test("FeatureProbe number toggle", (done) => {
@@ -67,6 +131,7 @@ test("FeatureProbe string toggle", (done) => {
 });
 
 test("FeatureProbe json toggle", (done) => {
+  const fpClient = FeatureProbe.newForTest(data);
   expect(fpClient.jsonValue("json_toggle", {})).toMatchObject({
     v: "v1",
     variation_0: "c2",
@@ -82,4 +147,77 @@ test("FeatureProbe json toggle", (done) => {
   expect(detail.value).toMatchObject({});
   expect(detail.ruleIndex).toBe(0);
   done();
+});
+
+test("FeatureProbe logout", (done) => {
+  const user = new FPUser().with("city", "2");
+  expect(user.get('city')).toBe('2');
+
+  const fp = new FeatureProbe();
+  fp.init({
+    remoteUrl: "http://127.0.0.1:4007",
+    clientSdkKey: "client-sdk-key1",
+    user: user,
+  });
+
+  fp.logout();
+  expect(fp.getUser().get('city')).toBe(undefined);
+  done();
+});
+
+test("FeatureProbe start error", (done) => {
+  const user = new FPUser().with("city", "2");
+  expect(user.get('city')).toBe('2');
+
+  const fp = new FeatureProbe();
+  fp.init({
+    remoteUrl: "http://127.0.0.1:4007",
+    clientSdkKey: "client-sdk-key1",
+    user: user,
+    timeoutInterval: 1000
+  });
+
+  fp.on("error", function() {
+    done();
+  })
+  
+  fp.start();
+});
+
+test("FeatureProbe start ready", (done) => {
+  const fpClient = FeatureProbe.newForTest(data);
+
+  fpClient.on("ready", function() {
+    done();
+  });
+  
+  fpClient.start();
+});
+
+test("FeatureProbe stop", (done) => {
+  const fpClient = FeatureProbe.newForTest(data);
+  
+  fpClient.start();
+  fpClient.stop();
+
+  done();
+});
+
+test("FeatureProbe waitUntilReady", (done) => {
+  const fpClient = FeatureProbe.newForTest(data);
+  fpClient.start();
+
+  fpClient.waitUntilReady().then(() => {
+    done();
+  });
+});
+
+test("FeatureProbe allToggles", (done) => {
+  const fpClient = FeatureProbe.newForTest(data);
+  fpClient.start();
+
+  fpClient.waitUntilReady().then(() => {
+    expect(fpClient.allToggles()).toMatchObject(data);
+    done();
+  });
 });

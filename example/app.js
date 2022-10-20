@@ -13,6 +13,14 @@ App({
       refreshInterval: 5000,
     });
 
+    featureProbeClient.on("ready", function() {
+      console.log("SDK is ready!");
+    });
+
+    featureProbeClient.on("error", function() {
+      console.log("SDK initialized error!");
+    });
+
     featureProbeClient.start();
   },
   globalData: {

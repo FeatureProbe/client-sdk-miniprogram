@@ -1,5 +1,5 @@
-import { FPUser } from './FPUser';
-import { featureProbeClient, FeatureProbe } from './FeatureProbe';
+import { FPUser } from "./FPUser";
+import { featureProbeClient, FeatureProbe } from "./FeatureProbe";
 
 export { FPUser, FeatureProbe, featureProbeClient };
 
@@ -8,7 +8,7 @@ declare global {
   let getApp: () => any;
 }
 
-featureProbeClient.on('update', function() {
+featureProbeClient.on("update", function() {
   getApp().globalData.toggles = featureProbeClient.allToggles();
 });
 

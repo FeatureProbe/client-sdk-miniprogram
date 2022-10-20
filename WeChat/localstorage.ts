@@ -1,28 +1,21 @@
 declare class wx {
   static getStorageSync(key: string): any;
   static setStorageSync(key: string, data: any): void;
-  static removeStorageSync(key: string): void;
 }
 
-export default {
-  getItem(key: string): string {
+export default class StorageProvider {
+  public async getItem(key: string) {
     try {
       return wx.getStorageSync(key);
     } catch (e) {
       console.log(e);
-      return '';
+      return "";
     }
-  },
-  setItem(key: string, data: string) {
+  }
+
+  public async setItem(key: string, data: string) {
     try {
       wx.setStorageSync(key, data);
-    } catch (e) {
-      console.log(e);
-    }
-  },
-  removeItem(key: string) {
-    try {
-      wx.removeStorageSync(key);
     } catch (e) {
       console.log(e);
     }

@@ -2,20 +2,24 @@ import { TinyEmitter } from "tiny-emitter";
 import { Base64 } from "js-base64";
 import wefetch from "wefetch";
 import { FPUser } from "./FPUser";
-import { FPToggleDetail, IParams, IOption  } from "./types";
+import StorageProvider from "./localstorage";
+import { FPToggleDetail, IParams, IOption, IStorageProvider } from "./types";
 
-const PKG_VERSION = 'SDK_VERSION';
+const PKG_VERSION = "SDK_VERSION";
 const UA = "WECHAT_MINIPROGRAM/" + PKG_VERSION;
+const KEY = "repository";
 
 const STATUS = {
   PENDING: "pending",
   READY: "ready",
+  ERROR: "error",
 }
 
 const EVENTS = {
   READY: "ready",
   ERROR: "error",
   UPDATE: "update",
+  CACHE_READY: "cache_ready"
 };
 
 class FeatureProbe extends TinyEmitter {
@@ -24,20 +28,27 @@ class FeatureProbe extends TinyEmitter {
   private refreshInterval: number;
   private clientSdkKey: string;
   private user: FPUser;
-  private toggles: { [key: string]: FPToggleDetail } | null;
+  private toggles: { [key: string]: FPToggleDetail } | undefined;
   private timer?: NodeJS.Timeout;
+  private timeoutTimer?: NodeJS.Timeout;
   private readyPromise: Promise<void>;
   private status: string;
+  private storage: IStorageProvider;
+  private timeoutInterval: number;
 
   constructor() {
     super();
 
-    this.togglesUrl = '';
-    this.eventsUrl = '';
+    this.togglesUrl = "";
+    this.eventsUrl = "";
     this.user = new FPUser();
-    this.clientSdkKey = '';
-    this.refreshInterval = 0;
-    this.toggles = {};
+    this.clientSdkKey = "";
+    this.refreshInterval = 1000;
+    this.timeoutInterval = 10000;
+    this.toggles = undefined;
+    this.status = STATUS.PENDING;
+    this.storage = new StorageProvider();
+
     this.readyPromise = new Promise((resolve) => {
       const onReadyCallback = () => {
         this.off(EVENTS.READY, onReadyCallback);
@@ -45,7 +56,6 @@ class FeatureProbe extends TinyEmitter {
       };
       this.on(EVENTS.READY, onReadyCallback);
     });
-    this.status = STATUS.PENDING;
   }
 
   public init({
@@ -55,25 +65,25 @@ class FeatureProbe extends TinyEmitter {
     clientSdkKey,
     user,
     refreshInterval = 1000,
+    timeoutInterval = 10000,
   }: IOption) {
     if (!clientSdkKey) {
       throw new Error("clientSdkKey is required");
     }
-
     if (refreshInterval <= 0) {
       throw new Error("refreshInterval is invalid");
     }
-
+    if (timeoutInterval <= 0) {
+      throw new Error("timeoutInterval is invalid");
+    }
+    if (!remoteUrl && !togglesUrl && !eventsUrl) {
+      throw new Error("remoteUrl is required");
+    }
     if (!remoteUrl && !togglesUrl) {
       throw new Error("remoteUrl or togglesUrl is required");
     }
-
     if (!remoteUrl && !eventsUrl) {
       throw new Error("remoteUrl or eventsUrl is required");
-    }
-
-    if (!remoteUrl && !togglesUrl && !eventsUrl) {
-      throw new Error("remoteUrl is required");
     }
 
     this.togglesUrl = togglesUrl || (remoteUrl + "/api/client-sdk/toggles");
@@ -81,19 +91,35 @@ class FeatureProbe extends TinyEmitter {
     this.user = user;
     this.clientSdkKey = clientSdkKey;
     this.refreshInterval = refreshInterval;
+    this.timeoutInterval = timeoutInterval;
   }
 
   public async start() {
-    const interval = this.refreshInterval;
+    this.timeoutTimer = setTimeout(() => {
+      if (this.status === STATUS.PENDING) {
+        this.errorInitialized();
+      }
+    }, this.timeoutInterval);
+
     try {
+      // Emit `cache_ready` event if toggles exist in LocalStorage
+      const toggles = await this.storage.getItem(KEY);
+      if (toggles) {
+        this.toggles = JSON.parse(toggles);
+        this.emit(EVENTS.CACHE_READY);
+      }
+
       await this.fetchToggles();
     } finally {
-      this.timer = setInterval(() => this.fetchToggles(), interval);
+      this.timer = setInterval(() => this.fetchToggles(), this.refreshInterval);
     }
   }
 
   public stop() {
     clearInterval(this.timer);
+    clearTimeout(this.timeoutTimer);
+    this.timeoutTimer = undefined;
+    this.timer = undefined;
   }
 
   public waitUntilReady(): Promise<void> {
@@ -149,12 +175,13 @@ class FeatureProbe extends TinyEmitter {
     this.identifyUser(user);
   }
 
-  static newForTest(toggles: { [key: string]: any }): FeatureProbe {
+  static newForTest(toggles?: { [key: string]: any }): FeatureProbe {
     const fp = new FeatureProbe();
     fp.init({
       remoteUrl: "http://127.0.0.1:4000",
       clientSdkKey: "_",
       user: new FPUser(),
+      timeoutInterval: 1000,
     });
     fp.toggles = toggles;
     fp.successInitialized();
@@ -235,13 +262,29 @@ class FeatureProbe extends TinyEmitter {
       data: {
         user: userParam
       }
-    }).then((response: any) => {
-      this.toggles = response.data;
-      this.successInitialized();
-      this.emit(EVENTS.UPDATE);
-    }).catch((e: any) => {
-      console.error(e);
-      //this.emit(EVENTS.ERROR, e);
+    })
+    .then(response => {
+      if (response.statusCode >= 200 && response.statusCode < 300) {
+        return response;
+      } else {
+        const error: Error = new Error(response.data.error);
+        throw error;
+      }
+    })
+    .then(response => {
+      if (this.status !== STATUS.ERROR) {
+        this.toggles = response.data;
+
+        if (this.status === STATUS.PENDING) {
+          this.successInitialized();
+        } else if (this.status === STATUS.READY) {
+          this.emit(EVENTS.UPDATE);
+        }
+
+        this.storage.setItem(KEY, JSON.stringify(response.data));
+      }
+    }).catch(e => {
+      console.error("FeatureProbe MiniProgram SDK: Error getting toggles: ", e);
     });
   }
 
@@ -275,23 +318,48 @@ class FeatureProbe extends TinyEmitter {
           UA: UA,
         },
         data: JSON.stringify(payload),
-      }).catch(() => {
-        // TODO:
+      })
+      .then(response => {
+        if (response.statusCode >= 200 && response.statusCode < 300) {
+          return response;
+        } else {
+          const error: Error = new Error(response.data.error);
+          throw error;
+        }
+      })
+      .catch(e => {
+        console.error("FeatureProbe MiniProgram SDK: Error reporting events: ", e);
       });
     }
   }
 
+  // Emit `ready` event if toggles are successfully returned from server
   private successInitialized() {
-    if(this.status === STATUS.PENDING) {
-      this.status = STATUS.READY;
-      setTimeout(() => {
-        this.emit(EVENTS.READY);
-      });
+    this.status = STATUS.READY;
+    setTimeout(() => {
+      this.emit(EVENTS.READY);
+    });
+            
+    if (this.timeoutTimer) {
+      clearTimeout(this.timeoutTimer);
+      this.timeoutTimer = undefined;
+    }
+  }
+
+  // Emit `error` event if toggles are not available and timeout has been reached
+  private errorInitialized() {
+    this.status = STATUS.ERROR;
+    setTimeout(() => {
+      this.emit(EVENTS.ERROR);
+    });
+
+    if (this.timer) {
+      clearInterval(this.timer);
+      this.timer = undefined;
     }
   }
 }
 
 const featureProbeClient = new FeatureProbe();
-
 
 export { FeatureProbe, featureProbeClient };
