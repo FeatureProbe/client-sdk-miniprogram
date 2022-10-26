@@ -4,4 +4,3 @@ global.wx = {
   getStorageSync: jest.fn(),
   setStorageSync: jest.fn(),
 }
-

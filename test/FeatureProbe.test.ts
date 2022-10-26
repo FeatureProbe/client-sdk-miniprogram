@@ -209,7 +209,9 @@ test("FeatureProbe waitUntilReady", (done) => {
 
   fpClient.waitUntilReady().then(() => {
     done();
-  });
+  }).catch(() => {
+    done();
+  })
 });
 
 test("FeatureProbe allToggles", (done) => {

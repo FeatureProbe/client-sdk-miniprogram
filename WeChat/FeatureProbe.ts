@@ -31,7 +31,7 @@ class FeatureProbe extends TinyEmitter {
   private toggles: { [key: string]: FPToggleDetail } | undefined;
   private timer?: NodeJS.Timeout;
   private timeoutTimer?: NodeJS.Timeout;
-  private readyPromise: Promise<void>;
+  private readyPromise: null | Promise<void>;
   private status: string;
   private storage: IStorageProvider;
   private timeoutInterval: number;
@@ -48,14 +48,7 @@ class FeatureProbe extends TinyEmitter {
     this.toggles = undefined;
     this.status = STATUS.PENDING;
     this.storage = new StorageProvider();
-
-    this.readyPromise = new Promise((resolve) => {
-      const onReadyCallback = () => {
-        this.off(EVENTS.READY, onReadyCallback);
-        resolve();
-      };
-      this.on(EVENTS.READY, onReadyCallback);
-    });
+    this.readyPromise = null;
   }
 
   public init({
@@ -123,6 +116,33 @@ class FeatureProbe extends TinyEmitter {
   }
 
   public waitUntilReady(): Promise<void> {
+    if (this.readyPromise) {
+      return this.readyPromise;
+    }
+
+    if (this.status === STATUS.READY) {
+      return Promise.resolve();
+    }
+
+    if (this.status === STATUS.ERROR) {
+      return Promise.reject();
+    }
+
+    this.readyPromise = new Promise((resolve, reject) => {
+      const onReadyCallback = () => {
+        this.off(EVENTS.READY, onReadyCallback);
+        resolve();
+      };
+
+      const onErrorCallback = () => {
+        this.off(EVENTS.ERROR, onErrorCallback);
+        reject();
+      };
+
+      this.on(EVENTS.READY, onReadyCallback);
+      this.on(EVENTS.ERROR, onErrorCallback);
+    });
+
     return this.readyPromise;
   }
 
