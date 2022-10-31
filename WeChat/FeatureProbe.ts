@@ -3,7 +3,7 @@ import { Base64 } from "js-base64";
 import wefetch from "wefetch";
 import { FPUser } from "./FPUser";
 import StorageProvider from "./localstorage";
-import { FPToggleDetail, IParams, IOption, IStorageProvider } from "./types";
+import { FPToggleDetail, IParams, FPOptions, FPStorageProvider } from "./types";
 
 const PKG_VERSION = "SDK_VERSION";
 const UA = "WECHAT_MINIPROGRAM/" + PKG_VERSION;
@@ -22,6 +22,10 @@ const EVENTS = {
   CACHE_READY: "cache_ready"
 };
 
+/**
+ * You can obtainan a client of FeatureProbe, 
+ * which provides access to all of the SDK's functionality.
+ */
 class FeatureProbe extends TinyEmitter {
   private togglesUrl: string ;
   private eventsUrl: string;
@@ -33,7 +37,7 @@ class FeatureProbe extends TinyEmitter {
   private timeoutTimer?: NodeJS.Timeout;
   private readyPromise: null | Promise<void>;
   private status: string;
-  private storage: IStorageProvider;
+  private storage: FPStorageProvider;
   private timeoutInterval: number;
 
   constructor() {
@@ -51,6 +55,9 @@ class FeatureProbe extends TinyEmitter {
     this.readyPromise = null;
   }
 
+  /**
+   * Initialize the FeatureProbe client.
+   */
   public init({
     remoteUrl,
     togglesUrl,
@@ -59,7 +66,7 @@ class FeatureProbe extends TinyEmitter {
     user,
     refreshInterval = 1000,
     timeoutInterval = 10000,
-  }: IOption) {
+  }: FPOptions) {
     if (!clientSdkKey) {
       throw new Error("clientSdkKey is required");
     }
@@ -87,6 +94,9 @@ class FeatureProbe extends TinyEmitter {
     this.timeoutInterval = timeoutInterval;
   }
 
+  /**
+   * Start the FeatureProbe client.
+   */
   public async start() {
     this.timeoutTimer = setTimeout(() => {
       if (this.status === STATUS.PENDING) {
@@ -108,6 +118,10 @@ class FeatureProbe extends TinyEmitter {
     }
   }
 
+  /**
+   * Stop the FeatureProbe client, once the client has been stopped, 
+   * SDK will no longer listen for toggle changes or send metrics to Server.
+   */
   public stop() {
     clearInterval(this.timer);
     clearTimeout(this.timeoutTimer);
@@ -115,6 +129,12 @@ class FeatureProbe extends TinyEmitter {
     this.timer = undefined;
   }
 
+  /**
+   * Returns a Promise which tracks the client's ready state.
+   *
+   * The Promise will be resolved if the client successfully get toggles from the server
+   * or ejected if client error get toggles from the server until `timeoutInterval` countdown reaches.
+   */
   public waitUntilReady(): Promise<void> {
     if (this.readyPromise) {
       return this.readyPromise;
@@ -146,50 +166,140 @@ class FeatureProbe extends TinyEmitter {
     return this.readyPromise;
   }
 
+  /**
+   * Determines the return `boolean` value of a toggle for the current user.
+   *
+   *
+   * @param key
+   *   The unique key of the toggle.
+   * @param defaultValue
+   *   The default value of the toggle, to be used if the value is not available from FeatureProbe.
+   */
   public boolValue(key: string, defaultValue: boolean): boolean {
     return this.toggleValue(key, defaultValue, "boolean");
   }
 
+  /**
+   * Determines the return `number` value of a toggle for the current user.
+   *
+   *
+   * @param key
+   *   The unique key of the toggle.
+   * @param defaultValue
+   *   The default value of the toggle, to be used if the value is not available from FeatureProbe.
+   */
   public numberValue(key: string, defaultValue: number): number {
     return this.toggleValue(key, defaultValue, "number");
   }
 
+  /**
+   * Determines the return `string` value of a toggle for the current user.
+   *
+   *
+   * @param key
+   *   The unique key of the toggle.
+   * @param defaultValue
+   *   The default value of the toggle, to be used if the value is not available from FeatureProbe.
+   */
   public stringValue(key: string, defaultValue: string): string {
     return this.toggleValue(key, defaultValue, "string");
   }
 
+  /**
+   * Determines the return `json` value of a toggle for the current user.
+   *
+   *
+   * @param key
+   *   The unique key of the toggle.
+   * @param defaultValue
+   *   The default value of the toggle, to be used if the value is not available from FeatureProbe.
+   */
   public jsonValue(key: string, defaultValue: object): object {
     return this.toggleValue(key, defaultValue, "object");
   }
 
+  /**
+   * Determines the return `boolean` value of a toggle for the current user, along with information about how it was calculated.
+   *
+   *
+   * @param key
+   *   The unique key of the toggle.
+   * @param defaultValue
+   *   The default value of the toggle, to be used if the value is not available from FeatureProbe.
+   */
   public boolDetail(key: string, defaultValue: boolean): FPToggleDetail {
     return this.toggleDetail(key, defaultValue, "boolean");
   }
 
+  /**
+   * Determines the return `number` value of a toggle for the current user, along with information about how it was calculated.
+   *
+   *
+   * @param key
+   *   The unique key of the toggle.
+   * @param defaultValue
+   *   The default value of the toggle, to be used if the value is not available from FeatureProbe.
+   */
   public numberDetail(key: string, defaultValue: number): FPToggleDetail {
     return this.toggleDetail(key, defaultValue, "number");
   }
 
+  /**
+   * Determines the return `string` value of a toggle for the current user, along with information about how it was calculated.
+   *
+   *
+   * @param key
+   *   The unique key of the toggle.
+   * @param defaultValue
+   *   The default value of the toggle, to be used if the value is not available from FeatureProbe.
+   */
   public stringDetail(key: string, defaultValue: string): FPToggleDetail {
     return this.toggleDetail(key, defaultValue, "string");
   }
 
+  /**
+   * Determines the return `json` value of a toggle for the current user, along with information about how it was calculated.
+   *
+   *
+   * @param key
+   *   The unique key of the toggle.
+   * @param defaultValue
+   *   The default value of the toggle, to be used if the value is not available from FeatureProbe.
+   */
   public jsonDetail(key: string, defaultValue: object): FPToggleDetail {
     return this.toggleDetail(key, defaultValue, "object");
   }
 
+  /**
+   * Returns an object of all available toggles' details to the current user.
+   */
   public allToggles(): { [key: string]: FPToggleDetail } | undefined {
     return Object.assign({}, this.toggles);
   }
 
+  /**
+   * Returns the current user.
+   *
+   * This is the user that was most recently passed to [[identifyUser]], or, if [[identifyUser]] has never
+   * been called, the initial user specified when the client was created.
+   */
   public getUser(): FPUser {
     return this.user;
   }
 
+  /**
+   * Changing the current user to FeatureProbe.
+   *
+   * @param user
+   *   A new FPUser instance.
+   */
   public identifyUser(user: FPUser) {
     this.user = user;
   }
 
+  /**
+   * Logout the current user, change the current user to an anonymous user.
+   */
   public logout() {
     const user = new FPUser();
     this.identifyUser(user);
@@ -380,6 +490,9 @@ class FeatureProbe extends TinyEmitter {
   }
 }
 
+/**
+ * The client of the FeatureProbe.
+ */
 const featureProbeClient = new FeatureProbe();
 
 export { FeatureProbe, featureProbeClient };

@@ -1,7 +1,8 @@
 import { FPUser } from "./FPUser";
 import { featureProbeClient, FeatureProbe } from "./FeatureProbe";
+import { FPToggleDetail, FPStorageProvider, FPOptions } from "./types";
 
-export { FPUser, FeatureProbe, featureProbeClient };
+export { FPUser, FeatureProbe, featureProbeClient, FPToggleDetail, FPStorageProvider, FPOptions };
 
 declare global {
   let App: (config?: any) => any;
