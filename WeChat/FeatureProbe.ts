@@ -3,7 +3,7 @@ import { Base64 } from "js-base64";
 import wefetch from "wefetch";
 import { FPUser } from "./FPUser";
 import StorageProvider from "./localstorage";
-import { FPToggleDetail, IParams, FPOptions, FPStorageProvider } from "./types";
+import { FPDetail, IParams, FPConfig, FPStorageProvider } from "./types";
 
 const PKG_VERSION = "SDK_VERSION";
 const UA = "WECHAT_MINIPROGRAM/" + PKG_VERSION;
@@ -32,7 +32,7 @@ class FeatureProbe extends TinyEmitter {
   private refreshInterval: number;
   private clientSdkKey: string;
   private user: FPUser;
-  private toggles: { [key: string]: FPToggleDetail } | undefined;
+  private toggles: { [key: string]: FPDetail } | undefined;
   private timer?: NodeJS.Timeout;
   private timeoutTimer?: NodeJS.Timeout;
   private readyPromise: null | Promise<void>;
@@ -66,7 +66,7 @@ class FeatureProbe extends TinyEmitter {
     user,
     refreshInterval = 1000,
     timeoutInterval = 10000,
-  }: FPOptions) {
+  }: FPConfig) {
     if (!clientSdkKey) {
       throw new Error("clientSdkKey is required");
     }
@@ -227,7 +227,7 @@ class FeatureProbe extends TinyEmitter {
    * @param defaultValue
    *   The default value of the toggle, to be used if the value is not available from FeatureProbe.
    */
-  public boolDetail(key: string, defaultValue: boolean): FPToggleDetail {
+  public boolDetail(key: string, defaultValue: boolean): FPDetail {
     return this.toggleDetail(key, defaultValue, "boolean");
   }
 
@@ -240,7 +240,7 @@ class FeatureProbe extends TinyEmitter {
    * @param defaultValue
    *   The default value of the toggle, to be used if the value is not available from FeatureProbe.
    */
-  public numberDetail(key: string, defaultValue: number): FPToggleDetail {
+  public numberDetail(key: string, defaultValue: number): FPDetail {
     return this.toggleDetail(key, defaultValue, "number");
   }
 
@@ -253,7 +253,7 @@ class FeatureProbe extends TinyEmitter {
    * @param defaultValue
    *   The default value of the toggle, to be used if the value is not available from FeatureProbe.
    */
-  public stringDetail(key: string, defaultValue: string): FPToggleDetail {
+  public stringDetail(key: string, defaultValue: string): FPDetail {
     return this.toggleDetail(key, defaultValue, "string");
   }
 
@@ -266,14 +266,14 @@ class FeatureProbe extends TinyEmitter {
    * @param defaultValue
    *   The default value of the toggle, to be used if the value is not available from FeatureProbe.
    */
-  public jsonDetail(key: string, defaultValue: object): FPToggleDetail {
+  public jsonDetail(key: string, defaultValue: object): FPDetail {
     return this.toggleDetail(key, defaultValue, "object");
   }
 
   /**
    * Returns an object of all available toggles' details to the current user.
    */
-  public allToggles(): { [key: string]: FPToggleDetail } | undefined {
+  public allToggles(): { [key: string]: FPDetail } | undefined {
     return Object.assign({}, this.toggles);
   }
 
@@ -342,7 +342,7 @@ class FeatureProbe extends TinyEmitter {
     key: string,
     defaultValue: any,
     valueType: string
-  ): FPToggleDetail {
+  ): FPDetail {
     this.sendEvents(key);
 
     if (this.toggles == undefined) {
