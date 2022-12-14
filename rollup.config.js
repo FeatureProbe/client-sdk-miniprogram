@@ -1,7 +1,7 @@
 import typescript from "rollup-plugin-typescript2";
 import minify from "rollup-plugin-babel-minify";
-import resolve from "rollup-plugin-node-resolve";
-import commonjs from "rollup-plugin-commonjs";
+import resolve from "@rollup/plugin-node-resolve";
+import commonjs from "@rollup/plugin-commonjs";
 import nodePolyfills from "rollup-plugin-node-polyfills";
 import json from "@rollup/plugin-json";
 import replace from 'rollup-plugin-replace';
@@ -14,7 +14,6 @@ export default {
     format: 'esm',
   },
   plugins: [
-    nodePolyfills(),
     resolve({}),
     commonjs({
       include: "node_modules/**",
@@ -22,8 +21,9 @@ export default {
     typescript({ tsconfigOverride: { compilerOptions: { module: "ES2015" } } }),
     minify({ comments: false }),
     json(),
+    nodePolyfills(),
     replace({
       SDK_VERSION: pkg.version
-    })
+    }),
   ]
 };

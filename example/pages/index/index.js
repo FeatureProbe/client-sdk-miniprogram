@@ -1,4 +1,4 @@
-import { featureProbeClient } from "featureprobe-client-sdk-miniprogram";
+// import { featureProbeClient } from "../../dist";
 // index.js
 
 Page({
@@ -7,16 +7,16 @@ Page({
   },
 
   onLoad() {
-    const _this = this;
-    featureProbeClient.on('ready', function () {
-      const boolValue = featureProbeClient.boolValue("campaign_allow_list", false);
-      const boolDetail = featureProbeClient.boolDetail("campaign_allow_list", false);
+    // const _this = this;
+    // featureProbeClient.on('ready', function () {
+    //   const boolValue = featureProbeClient.boolValue("campaign_allow_list", false);
+    //   const boolDetail = featureProbeClient.boolDetail("campaign_allow_list", false);
       
-      _this.setData({
-        boolValue: JSON.stringify(boolValue),
-        boolDetail: JSON.stringify(boolDetail),
-      });
-    })
+    //   _this.setData({
+    //     boolValue: JSON.stringify(boolValue),
+    //     boolDetail: JSON.stringify(boolDetail),
+    //   });
+    // })
   },
 
   onreplace() {
