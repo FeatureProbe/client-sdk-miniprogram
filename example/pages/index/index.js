@@ -1,16 +1,16 @@
-import { featureProbeClient } from "featureprobe-client-sdk-miniprogram";
 // index.js
+import { getClient } from "featureprobe-client-sdk-miniprogram";
 
 Page({
-  data: {
-    
-  },
+  data: {},
 
   onLoad() {
     const _this = this;
-    featureProbeClient.on('ready', function () {
-      const boolValue = featureProbeClient.boolValue("campaign_allow_list", false);
-      const boolDetail = featureProbeClient.boolDetail("campaign_allow_list", false);
+    const client = getClient();
+
+    client.on('ready', function () {
+      const boolValue = client.boolValue("campaign_allow_list", false);
+      const boolDetail = client.boolDetail("campaign_allow_list", false);
       
       _this.setData({
         boolValue: JSON.stringify(boolValue),
