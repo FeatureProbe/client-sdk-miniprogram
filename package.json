@@ -54,7 +54,7 @@
     "typescript": "^4.8.3"
   },
   "dependencies": {
-    "featureprobe-client-sdk-js": "^1.2.0-alpha.1",
+    "featureprobe-client-sdk-js": "^1.2.0",
     "js-base64": "^3.7.2",
     "tiny-emitter": "^2.1.0",
     "wefetch": "^1.3.6"
