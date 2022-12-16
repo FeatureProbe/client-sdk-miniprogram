@@ -1,3 +1,5 @@
+import { IHttpRequest } from "featureprobe-client-sdk-js";
+
 export interface FPStorageProvider {
   /**
    * Save data to storage.
@@ -21,7 +23,21 @@ export interface FPStorageProvider {
 }
 
 export interface IPlatForm {
-  _fetch: any;
+  /**
+   * Local storage used in Wechat miniprogram
+   * 
+   */
   localStorage: FPStorageProvider;
+
+  /**
+   * Useragent of Wechat miniprogram
+   * 
+   */
   UA: string;
+
+  /**
+   * Http service used in Wechat miniprogram
+   * 
+   */
+  httpRequest: IHttpRequest;
 }

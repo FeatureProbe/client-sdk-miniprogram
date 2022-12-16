@@ -1,22 +1,22 @@
-// import { featureProbeClient } from "../../dist";
 // index.js
+import { getClient } from "featureprobe-client-sdk-miniprogram";
 
 Page({
-  data: {
-    
-  },
+  data: {},
 
   onLoad() {
-    // const _this = this;
-    // featureProbeClient.on('ready', function () {
-    //   const boolValue = featureProbeClient.boolValue("campaign_allow_list", false);
-    //   const boolDetail = featureProbeClient.boolDetail("campaign_allow_list", false);
+    const _this = this;
+    const client = getClient();
+
+    client.on('ready', function () {
+      const boolValue = client.boolValue("campaign_allow_list", false);
+      const boolDetail = client.boolDetail("campaign_allow_list", false);
       
-    //   _this.setData({
-    //     boolValue: JSON.stringify(boolValue),
-    //     boolDetail: JSON.stringify(boolDetail),
-    //   });
-    // })
+      _this.setData({
+        boolValue: JSON.stringify(boolValue),
+        boolDetail: JSON.stringify(boolDetail),
+      });
+    })
   },
 
   onreplace() {
