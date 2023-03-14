@@ -46,7 +46,6 @@ export function initialize(options: FPConfig): FeatureProbe | undefined {
 
 /**
  * Get the SDK client
- * 
  */
 export function getClient() {
   return featureProbeClient;

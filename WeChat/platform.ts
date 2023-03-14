@@ -3,6 +3,8 @@ import { IHttpRequest } from "featureprobe-client-sdk-js";
 import { IPlatForm } from "./types";
 import StorageProvider from "./localstorage";
 import pkg from '../package.json';
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const io = require("weapp.socket.io");
 
 const PKG_VERSION = pkg.version;
 const UA = "MINIPROGRAM/" + PKG_VERSION;
@@ -56,4 +58,5 @@ export const platform: IPlatForm = {
   localStorage: new StorageProvider(),
   UA: UA,
   httpRequest: httpRequest,
+  socket: io,
 };

@@ -40,4 +40,10 @@ export interface IPlatForm {
    * 
    */
   httpRequest: IHttpRequest;
+
+  /**
+   * Socket.io client used in Wechat miniprogram
+   * 
+   */
+  socket: any;
 }

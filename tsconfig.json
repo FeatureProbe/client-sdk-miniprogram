@@ -12,5 +12,5 @@
     "forceConsistentCasingInFileNames": true,
     "skipLibCheck": true
   },
-  "include": ["WeChat/**/*"],
+  "include": ["WeChat/**/*", "index.d.ts"],
 }

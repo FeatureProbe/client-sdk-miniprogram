@@ -1,4 +1,5 @@
 import { initialize, FPUser } from "featureprobe-client-sdk-miniprogram";
+// import { initialize, FPUser } from "./dist/index";
 
 App({
   onLaunch() {

@@ -1,5 +1,6 @@
 // index.js
 import { getClient } from "featureprobe-client-sdk-miniprogram";
+// import { getClient } from "../../dist/index";
 
 Page({
   data: {},
