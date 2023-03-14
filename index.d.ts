@@ -1,0 +1,1 @@
+declare module 'weapp.socket.io';
