@@ -4,7 +4,6 @@ import { getClient } from "featureprobe-client-sdk-miniprogram";
 
 Page({
   data: {},
-
   onLoad() {
     const _this = this;
     const client = getClient();
