@@ -4,7 +4,7 @@
   "description": "",
   "main": ".eslintrc.js",
   "dependencies": {
-    "featureprobe-client-sdk-miniprogram": "^1.2.0"
+    "featureprobe-client-sdk-miniprogram": "^2.2.0"
   },
   "devDependencies": {},
   "scripts": {
