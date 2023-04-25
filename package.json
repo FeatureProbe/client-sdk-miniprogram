@@ -1,6 +1,6 @@
 {
   "name": "featureprobe-client-sdk-miniprogram",
-  "version": "2.0.1",
+  "version": "2.2.0",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "description": "FeatureProbe Client Side SDK for MiniProgram",
@@ -51,7 +51,7 @@
     "typescript": "^4.8.3"
   },
   "dependencies": {
-    "featureprobe-client-sdk-js": "^2.1.0",
+    "featureprobe-client-sdk-js": "^2.2.0",
     "js-base64": "^3.7.2",
     "tiny-emitter": "^2.1.0",
     "weapp.socket.io": "^3.0.0",
